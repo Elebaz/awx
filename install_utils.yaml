@@ -1,0 +1,9 @@
+---
+- name: Install Network Troubleshooting Tools
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure bind-utils is installed
+      ansible.builtin.package:
+        name: bind-utils
+        state: present
