@@ -1,0 +1,41 @@
+- name: Enroll Linux nodes into IPA
+  hosts: linux
+  become: yes
+  vars:
+    ipa_domain: lab.local
+    ipa_server: ipa-server.lab.local
+    ipa_realm: LAB.LOCAL
+   
+
+  tasks:
+
+    - name: Install IPA client packages
+      dnf:
+        name:
+          - ipa-client
+          - sssd
+          - oddjob
+          - oddjob-mkhomedir
+        state: present
+
+    - name: Set hostname properly
+      hostname:
+        name: "{{ inventory_hostname }}.lab.local"
+
+    - name: Add IPA server to hosts file
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.56.20 ipa-server.lab.local ipa-server"
+
+    - name: Run ipa-client-install
+      command: >
+        ipa-client-install
+        --domain={{ ipa_domain }}
+        --server={{ ipa_server }}
+        --realm={{ ipa_realm }}
+        --principal={{ ipaadmin_principal }}
+        --password={{ ipaadmin_password }}
+        --unattended
+        --mkhomedir
+      args:
+        creates: /etc/ipa/default.conf
